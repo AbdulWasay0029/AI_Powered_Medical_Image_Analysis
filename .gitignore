@@ -1,0 +1,21 @@
+
+# Python
+__pycache__/
+*.pyc
+
+# Environments
+env/
+venv/
+.env
+
+# Dataset (Too large for GitHub)
+chest_xray/
+Medical_Image_Analysis/chest_xray/
+
+# IDE
+.vscode/
+.idea/
+
+# Large Model Files (Optional: Remove this line if you use Git LFS)
+*.h5
+*.keras
