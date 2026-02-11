@@ -1,132 +1,301 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical AI - Pneumonia Detection</title>
+    <title>AI Medical Diagnosis | Pneumonia Detection</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --success-bg: #ecfdf5;
+            --success-text: #047857;
+            --danger-bg: #fef2f2;
+            --danger-text: #b91c1c;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
         }
+
         .container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 480px;
             text-align: center;
-            width: 400px;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 1.5rem;
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
         }
-        .upload-section {
-            border: 2px dashed #ccc;
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
             padding: 2rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.2s ease;
+            position: relative;
+            background-color: #f8fafc;
         }
-        .upload-section:hover {
-            border-color: #007bff;
+
+        .upload-area:hover,
+        .upload-area.drag-active {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
         }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .upload-text span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
         #imageInput {
             display: none;
         }
-        #preview {
-            max-width: 100%;
-            max-height: 200px;
-            margin-top: 1rem;
+
+        #preview-container {
+            margin-top: 1.5rem;
             display: none;
-            border-radius: 4px;
+            position: relative;
         }
-        button {
-            background-color: #007bff;
+
+        #preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ef4444;
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .analyze-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
             font-size: 1rem;
-            transition: background-color 0.3s;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .analyze-btn:hover {
+            background-color: var(--primary-hover);
         }
-        button:disabled {
-            background-color: #ccc;
+
+        .analyze-btn:disabled {
+            background-color: #9ca3af;
             cursor: not-allowed;
         }
-        #result {
+
+        #result-card {
             margin-top: 1.5rem;
             padding: 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             display: none;
+            text-align: left;
+            border-left: 5px solid transparent;
         }
+
         .result-normal {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border-left-color: #10b981 !important;
         }
+
         .result-pneumonia {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+            border-left-color: #ef4444 !important;
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-meta {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
+
     <div class="container">
-        <h1>AI Diagnosis Tool</h1>
-        
-        <div class="upload-section" onclick="document.getElementById('imageInput').click()">
-            <p>Click to upload X-Ray Image</p>
-            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(this)">
-            <img id="preview" alt="X-Ray Preview">
+        <header>
+            <h1>Medical Diagnosis AI</h1>
+            <p>Upload a Chest X-Ray to detect Pneumonia</p>
+        </header>
+
+        <div class="upload-area" id="drop-zone" onclick="document.getElementById('imageInput').click()">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">Drag & drop your X-Ray here, or <span>browse files</span></p>
+            <input type="file" id="imageInput" accept="image/*" onchange="handleFileSelect(this.files[0])">
         </div>
 
-        <button id="analyzeBtn" onclick="analyzeImage()" disabled>Analyze Image</button>
+        <div id="preview-container">
+            <button class="remove-btn" onclick="resetApp()">×</button>
+            <img id="preview-image" alt="X-Ray Preview">
+        </div>
 
-        <div id="result">
-            <h2 id="predictionText"></h2>
-            <p>Confidence: <span id="confidenceText"></span></p>
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>Analyze Image</button>
+
+        <div id="result-card">
+            <div class="result-title" id="predictionText"></div>
+            <div class="result-meta">Confidence Score: <span id="confidenceText"></span></div>
         </div>
     </div>
 
     <script>
-        function previewImage(input) {
-            const preview = document.getElementById('preview');
-            const btn = document.getElementById('analyzeBtn');
-            
-            if (input.files && input.files[0]) {
+        const dropZone = document.getElementById('drop-zone');
+        const input = document.getElementById('imageInput');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultCard = document.getElementById('result-card');
+
+        // Drag & Drop Events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            handleFileSelect(file);
+        }
+
+        function handleFileSelect(file) {
+            if (file && file.type.startsWith('image/')) {
+                // Manually set files property of input if dropped, so we can use standard form data logic
+                // But input.files is read-only usually, so we store file in a global variable or handle it directly
+                // Best trick: using DataTransfer object to update the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    btn.disabled = false;
-                    document.getElementById('result').style.display = 'none';
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                    dropZone.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    resultCard.style.display = 'none';
                 }
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
+        function resetApp() {
+            input.value = '';
+            previewContainer.style.display = 'none';
+            dropZone.style.display = 'block';
+            analyzeBtn.disabled = true;
+            resultCard.style.display = 'none';
+        }
+
         async function analyzeImage() {
-            const input = document.getElementById('imageInput');
-            const btn = document.getElementById('analyzeBtn');
-            const resultDiv = document.getElementById('result');
-            
             if (!input.files[0]) return;
 
-            btn.disabled = true;
-            btn.innerText = 'Analyzing...';
+            // Loading state
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<div class="loading-spinner"></div> Analyzing...';
+            resultCard.style.display = 'none';
 
             const formData = new FormData();
             formData.append('image', input.files[0]);
@@ -136,31 +305,30 @@
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                    return;
-                }
 
-                const prediction = data.Prediction;
-                const confidence = data.Confidence;
+                if (data.error) throw new Error(data.error);
 
-                document.getElementById('predictionText').innerText = prediction;
-                document.getElementById('confidenceText').innerText = (confidence * 100).toFixed(1) + '%';
-                
-                resultDiv.className = prediction === 'Normal' ? 'result-normal' : 'result-pneumonia';
-                resultDiv.style.display = 'block';
+                // Show result
+                const isNormal = data.Prediction === "Normal";
+                const predictionText = document.getElementById('predictionText');
+                const confidenceText = document.getElementById('confidenceText');
+
+                predictionText.innerText = isNormal ? "Diagnosis: Normal" : "Diagnosis: Pneumonia Detected";
+                confidenceText.innerText = (parseFloat(data.Confidence) * 100).toFixed(1) + "%"; // data.Confidence handles string/float
+
+                resultCard.className = isNormal ? 'result-normal' : 'result-pneumonia';
+                resultCard.style.display = 'block';
 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Analysis failed. Check console.');
+                alert('Analysis failed: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.innerText = 'Analyze Image';
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerText = 'Analyze Image';
             }
         }
     </script>
 </body>
+
 </html>

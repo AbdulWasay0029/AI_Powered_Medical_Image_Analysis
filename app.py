@@ -35,6 +35,7 @@ def predict():
     try:
         # Read file as bytes
         file_bytes = np.frombuffer(file.read(), np.uint8)
+        print(f"DEBUG: Read {len(file_bytes)} bytes from file")
         # Decode using OpenCV
         image = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
         
