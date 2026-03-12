@@ -1,88 +1,103 @@
+# AI Medical Image Analysis — Pneumonia Detection
 
-# AI-Powered Medical Image Analysis - Pneumonia Detection
+CNN-based binary classification system for detecting pneumonia from chest X-ray images. Trained on the Kaggle Chest X-Ray dataset, deployed via a Flask web interface for real-time inference.
 
-This project implements an AI system using a **Convolutional Neural Network (CNN)** to detect **Pneumonia** from **Chest X-Ray images**.
-It follows the step-by-step implementation guide:
-1.  **Data Loading**: Automatically loads and previews X-ray images.
-2.  **Preprocessing**: Resizes (256x256), converts to grayscale, and augments data.
-3.  **Model Training**: Trains a CNN (Conv2D -> MaxPooling -> Dense) on the dataset.
-4.  **Evaluation**: Checks accuracy and generates a confusion matrix.
-5.  **Web Deployment**: Provides a Flask web interface for users to upload and analyze images.
+**Accuracy: ~76% on test set**
 
-## 🛠️ Project Structure
+---
+
+## Model Architecture
+
 ```
-Medical_Image_Analysis/
-├── app.py               # Flask Web Application (Step 6)
-├── train_model.py       # Training Script (Steps 3 & 4)
-├── evaluate_model.py    # Evaluation Script (Step 5)
-├── load_preview.py      # Data Loading Script (Step 2)
-├── medical_ai_model.h5  # Trained AI Model
-├── requirements.txt     # Python Dependencies
-├── templates/
-│   └── index.html       # Web Interface (Frontend)
-└── chest_xray/          # Dataset (Train/Test/Val)
+Input (256×256 grayscale)
+  → Conv2D (32 filters, ReLU) → MaxPooling
+  → Conv2D (64 filters, ReLU) → MaxPooling
+  → Flatten
+  → Dense (128, ReLU) → Dropout (0.5)
+  → Dense (1, Sigmoid)        → Binary output: Normal / Pneumonia
 ```
 
-## 🚀 How to Recreate This Project
-Follow these exact steps to run the project from scratch.
+---
 
-### 1. Prerequisites
-- **Python 3.10 or 3.11** (Note: TensorFlow 2.x is not yet compatible with Python 3.12+ as of early 2026).
-- **Dataset**: Download the [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia) dataset from Kaggle.
+## Stack
 
-### 2. Setup Environment
-Open your terminal in the project folder:
+**Python · TensorFlow · Keras · Flask · NumPy · OpenCV**
+
+---
+
+## Project Structure
+
+```
+├── app.py                # Flask web application
+├── train_model.py        # Model training script
+├── evaluate_model.py     # Evaluation + confusion matrix
+├── load_preview.py       # Dataset preview utility
+├── medical_ai_model.h5   # Trained model weights
+├── requirements.txt
+└── templates/
+    └── index.html        # Upload interface
+```
+
+---
+
+## Setup
+
+**Requirements:** Python 3.10 or 3.11 (TensorFlow 2.x is not compatible with Python 3.12+)
+
 ```bash
-# Create a virtual environment (Python 3.11 recommended)
+# Create virtual environment
 py -3.11 -m venv env
 
-# Activate the environment
-# Windows:
+# Activate (Windows)
 .\env\Scripts\activate
-# Mac/Linux:
+
+# Activate (Mac/Linux)
 source env/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
-*(Note for Windows users: If you encounter path length errors during installation, use a virtual drive mapping `subst T: "path/to/project"` and install on `T:`)*
 
-### 3. Run the Scripts (In Order)
+> **Windows note:** If you hit path length errors during pip install, map a virtual drive:
+> `subst T: "C:\path\to\project"` then install from `T:`
 
-**Step 1: Preview Data**
-Verify the dataset is loaded correctly.
+---
+
+## Dataset
+
+Download [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia) from Kaggle. Extract into `chest_xray/` at the project root. The folder should contain `train/`, `test/`, and `val/` subdirectories.
+
+---
+
+## Usage
+
+Run scripts in this order:
+
 ```bash
+# 1. Verify dataset loads correctly
 python load_preview.py
-```
-*Output: Saves a sample X-ray image as `preview_sample.png`.*
+# Output: preview_sample.png
 
-**Step 2: Train the AI Model**
-Train the CNN model on your dataset. This may take 10-20 minutes on CPU.
-```bash
+# 2. Train the model (10–20 min on CPU)
 python train_model.py
-```
-*Output: Saves the trained model as `medical_ai_model.h5`.*
+# Output: medical_ai_model.h5
 
-**Step 3: Evaluate Performance**
-Check how accurate the model is on unseen test data.
-```bash
+# 3. Evaluate on test set
 python evaluate_model.py
-```
-*Output: Prints accuracy (e.g., 76%) and a confusion matrix.*
+# Output: accuracy score + confusion matrix
 
-**Step 4: Launch the Web App**
-Start the Flask server to use the AI interactively.
-```bash
+# 4. Launch web interface
 python app.py
+# Open: http://127.0.0.1:5000
 ```
-*   Open your browser and visit: **http://127.0.0.1:5000**
-*   Upload an X-ray image (e.g., from `chest_xray/test/PNEUMONIA`) to see the result.
 
-## 📊 Model Architecture
-- **Input**: 256x256 Grayscale Image
-- **Layers**:
-  - Conv2D (32 filters) + MaxPooling
-  - Conv2D (64 filters) + MaxPooling
-  - Flatten
-  - Dense (128 neurons, ReLU) + Dropout (0.5)
-  - Output Dense (1 neuron, Sigmoid) for Binary Classification (Normal vs Pneumonia).
+Upload any chest X-ray image through the browser interface to get a Normal / Pneumonia prediction.
+
+---
+
+## Preprocessing Pipeline
+
+- Resize to 256×256
+- Convert to grayscale
+- Normalize pixel values to [0, 1]
+- Data augmentation on training set (rotation, horizontal flip)
